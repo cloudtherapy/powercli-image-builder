@@ -1,0 +1,51 @@
+﻿#cloud-config
+#vim:syntax=yaml
+users:
+# A user by the name `ec2-user` is created in the image by default.
+  - default
+  - name: ansible
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCTD8HrwW7d5xvgs0o0dXkyNFdgZwab4G9Ok2Irh7uuk0OOW/U9QyePpfHzDboSsyfSGjwG3qzn6zKncq1vg2YmaR2oOm555T5D3/faGdJ1UJbx5hqiogkfw4hXMreg/u9Ah9CuucDUKwRxQC/MhpVrGb1MAEuDd5ZKPT6QF99ssgno/ibrHdraENMsZu+FxmJZ/Ukmi6ik8eJYRlSvAEZXw2hQIEcEaYejWMnNmE06ys5xjQe30pmV2a/Wxg4NN2MrDFzCssSDARAMak5v0vGkLGTsJYx56NaKLqnOudkKnPkXK/AvvEB26L1F1kaZLyR0jrzjTuKKEuqUJReKf/MV
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: sudo wheel
+    shell: /bin/bash
+
+#chpasswd:
+#  list: |
+#    ec2-user:N&!9K1Y4dk1k9lvv&KT%Rpuf
+
+# In the above line, do not add any spaces after 'ec2-user:'.
+
+runcmd:
+    - yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    - [ sh, -xc, "echo $(date) ': hello world!'" ]
+    - [ sh, -c, echo "=========hello world'=========" ]
+
+packages:
+    - libselinux-python
+    - firewalld
+    - ansible
+
+package_update: true
+package_upgrade: true
+
+#runcmd:
+#  - yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+#  - yum install -y libselinux-python
+#  - yum install -y firewalld
+#  - yum install -y ansible
+#  - yum update -y
+
+# package_upgrade: true
+
+# NOTE: Cloud-init applies network settings on every boot by default. To retain network settings from first boot, add following ‘write_files’ section:
+write_files:
+  - path: /etc/cloud/cloud.cfg.d/80_disable_network_after_firstboot.cfg
+    content: |
+      # Disable network configuration after first boot
+      network:
+        config: disabled
+  - path: /etc/cloud/cloud.cfg.d/90_enable_pw_auth.cfg
+    content: |
+      # Enable password authentication after first boot
+      ssh_pwauth: True
