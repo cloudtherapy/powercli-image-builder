@@ -6,6 +6,7 @@ param(
     [String]$VCenter="hci-vcenter.cetech-ne.local",
     [String]$ClusterName="NTAP",
     [String]$DatastoreISO="nfs_vsidata_ds1",
+    [String]$DatastoreCluster="NetApp-HCI-Datastore",
     [String]$VMNetwork="VM_Network",
     [String]$VMName="cetech-amzn2",
     [String]$DiskFormat="Thin",
@@ -23,8 +24,8 @@ Connect-VIServer $VCenter
 $Cluster = Get-Cluster -Name $ClusterName
 # TODO: VM Host is selected by memory. Review for improvement.
 $VMHost = Get-Cluster $Cluster | Get-VMHost | Sort MemoryGB | Select -first 1
-# TODO: Datastore is selected by capacity. Review for improvement.
-$Datastore = Get-Datastore | Sort FreeSpaceGB -Descending | Select -first 1
+
+$Datastore = Get-DatastoreCluster -Name $DatastoreCluster
 
 # Delete existing template
 $template = Get-Template $VMName -ErrorAction SilentlyContinue
@@ -69,16 +70,16 @@ if ($VM) {
     Start-VM $VM | Out-Null
 
     # Wait 2 minutes for updates to occur
-    Write-Output "VM Boot and configuration. Wait for 120 seconds..."
-    Start-Sleep -Seconds 120
+    Write-Output "VM Boot and configuration. Wait for 90 seconds..."
+    Start-Sleep -Seconds 90
 
     # Shutdown VM
     Write-Output "Shutdown VM"
     Shutdown-VMGuest $VM -Confirm:$false | Out-Null
 
     # Wait 30 seconds for power down to occur
-    Write-Output "VM Power Down. Wait for 30 seconds..."
-    Start-Sleep -Seconds 30
+    Write-Output "VM Power Down. Wait for 15 seconds..."
+    Start-Sleep -Seconds 15
 
     # Remove seed ISO from VM CD/DVD drive
     Write-Output "Remove seed ISO from VM CD/DVD drive"
@@ -95,4 +96,4 @@ if ($VM) {
 
 # Disconnect from VCenter
 Write-Output "Disconnect from VCenter"
-Disconnect-VIServer $VCenter -Confirm:$false
+#Disconnect-VIServer $VCenter -Confirm:$false
