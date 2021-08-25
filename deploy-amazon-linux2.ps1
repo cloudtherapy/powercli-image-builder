@@ -58,16 +58,15 @@ $VM = Get-VM $VMName
 
 if ($VM) {
 
-    # Add CD-Drive to VM and mount seed.iso
-    Write-Output "Mount seed ISO on VM CD/DVD drive"
-
+    # Content Library to mount seed.iso
     $clib = Get-ContentLibrary -Name $cLibName
-
     $clibDS = Get-Datastore -Name $clib.Datastore
+
     New-PSDrive -Name DS -PSProvider VimDatastore -Root '\' -Location $clibDS | Out-Null
     $isoPath = Get-ChildItem -Path "DS:" -Recurse -Filter "$($cLibItemName)*.iso" | Select -ExpandProperty DatastoreFullPath
     Remove-PSDrive -Name DS -Confirm:$false | Out-Null
     
+    # Add CD-Drive to VM and mount seed.iso
     Write-Output "Mount seed ISO on VM CD/DVD drive"
     New-CDDrive -VM $VM -IsoPath $isoPath -StartConnected | Out-Null
 
