@@ -83,9 +83,9 @@ if ($VM) {
     Write-Output "Shutdown VM"
     Shutdown-VMGuest $VM -Confirm:$false | Out-Null
 
-    # Wait 10 seconds for power down to occur
-    Write-Output "VM Power Down. Wait for 10 seconds..."
-    Start-Sleep -Seconds 10
+    # Wait 15 seconds for power down to occur
+    Write-Output "VM Power Down. Wait for 15 seconds..."
+    Start-Sleep -Seconds 15
 
     # Remove seed ISO from VM CD/DVD drive
     Write-Output "Remove seed ISO from VM CD/DVD drive"
