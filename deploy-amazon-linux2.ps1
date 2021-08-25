@@ -10,83 +10,10 @@ param(
     [String]$VMNetwork="VM_Network",
     [String]$VMName="cetech-amzn2",
     [String]$DiskFormat="Thin",
-    [String]$Folder="Templates"
+    [String]$Folder="Templates",
+    [String]$clibName="cetech-images",
+    [String]$clibItemName="seed"
 )
-
-function Set-CDDriveCLIso {
-<#
-    .SYNOPSIS
-    Mount an ISO from a Content Library
-    .DESCRIPTION
-    This function will mount an ISO located on a Content Library
-    on a CDDrive of a VM
-    .NOTES
-    Author:  Luc Dekens
-    Version:
-    1.0 24/12/20  Initial release
-    .PARAMETER VM
-    Specifies the virtual machines on whose guest operating systems
-    you want to run the script.
-    .PARAMETER CDDrive
-    Specifies the CDDrive on which the ISO will be mounted
-    .PARAMETER ContentLibrary
-    Specifies the Content Library on which the ISO is located.
-    .PARAMETER ContentLibraryIso
-    Specifies the ISO item on the Content Library
-    .EXAMPLE
-    $cl = Get-ContentLibrary -Name MyCL
-    $iso = Get-ContentLibraryItem -ContentLibrary $cl -Name MyISO
-    Get-VM -Name 'MyVM' | Get-CDDrive -Name 'CD/DVD drive 0' |
-    Set-CDDriveCLIso -ContentLibraryIso $iso -Confirm:$false
-    .EXAMPLE
-    $cd = Get-VM -Name MyVM | Get-CDDrive
-    Set-CDDriveCLIso -CDDrive $cd -ContentLibraryIso $iso -Confirm:$false
-#>
-    [cmdletbinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
-    param(
-        [parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [VMware.VimAutomation.ViCore.Types.V1.VirtualDevice.CDDrive]$CDDrive,
-        [parameter(Mandatory = $true)]
-        [VMware.VimAutomation.ViCore.Types.V1.ContentLibrary.ContentLibraryItem]$ContentLibraryISO
-    )
-
-    $target = "VM:$($CDDrive.Parent.Name) CD:$($CDDrive.Name)"
-    $action = "Mount ISO $($ContentLibraryISO.Name) from $($ContentLibraryISO.ContentLibrary.Name)"
-
-    if ($PSCmdlet.ShouldProcess($target, $action)) {
-        $driveName = -join ((65..90) | 
-            Get-Random -Count 3 | 
-            ForEach-Object -Process { [char]$_ })
-        $filter = "$($ContentLibraryISO.Name)*.iso" 
-        
-        $ds = Get-Datastore -Name $ContentLibraryISO.ContentLibrary.Datastore
-
-        New-PSDrive -Name $driveName -PSProvider VimDatastore -Root '\' -Location $ds | Out-Null
-        $clPath = Get-ChildItem -Path "$($driveName):" -Filter "$($ContentLibraryIso.Id)" -Recurse |
-            Select-Object -ExpandProperty FolderPath
-        $isoPath = Get-ChildItem -Path "$($driveName):\$($clPath.Split(' ')[1])" -Filter $filter -Recurse | 
-            Select-Object -ExpandProperty DatastoreFullPath
-        Remove-PSDrive -Name $driveName -Confirm:$false | Out-Null
-        
-        $spec = New-Object VMware.Vim.VirtualMachineConfigSpec
-        
-        $change = New-Object VMware.Vim.VirtualDeviceConfigSpec
-        $change.Operation = [Vmware.vim.VirtualDeviceConfigSpecOperation]::edit
-        
-        $dev = $cd.ExtensionData
-        $dev.Backing = New-Object VMware.Vim.VirtualCdromIsoBackingInfo
-        $dev.Backing.FileName = $isoPath
-        
-        $change.Device += $dev
-        $change.Device.Connectable.Connected = $true
-        
-        $spec.DeviceChange = $change
-        
-        $vm.ExtensionData.ReconfigVM($spec)
-        
-        Get-CDDrive -Id $CDDrive.Id
-    }
-}
 
 # Import PowerCLI Modules
 Import-Module VMware.VimAutomation.Core
@@ -111,14 +38,6 @@ if ($template) {
     Write-Output "No existing template found"
 }
 
-# Copy seed.iso file from NAS share to datastore
-# TODO: Replace logic for seed ISO with user data
-#Write-Output "Copy seed ISO to local datastore"
-#$DatastoreTemp = Get-Datastore $DatastoreISO
-#New-PSDrive -Location $DatastoreTemp -Name ds -PSProvider VimDatastore -Root "\" | Out-Null
-#Copy-DatastoreItem -Item "\\prodnas\downloads\OVAs\seed.iso" -Destination "ds:\ISO\Amazon\" | Out-Null
-#Remove-PSDrive -Name ds | Out-Null
-
 # Fetch OVA from Content Library
 $ova = Get-ContentLibraryItem -ContentLibrary cetech-images -Name cetech-amzn2
 
@@ -126,48 +45,47 @@ $ova = Get-ContentLibraryItem -ContentLibrary cetech-images -Name cetech-amzn2
 $iso = Get-ContentLibraryItem -ContentLibrary cetech-images -Name cetech-amzn2-seed
 
 # Build OVF Configuration for OVA
-Write-Output "Build OVF Configuration"
-$userData = Get-Content -Path '.\user-data' -Raw
-$ovfConfig = Get-OvfConfiguration -ContentLibraryItem $ova -Target $VMHost
+# Write-Output "Build OVF Configuration"
+# $userData = Get-Content -Path '.\user-data' -Raw
+$ovfConfig = Get-OvfConfiguration -ContentLibraryItem $ova -Target $Cluster
 # $ovfConfig.Common.user_data.Value = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($userData))
 $ovfConfig.NetworkMapping.bridged.Value = $VMNetwork
 
 # Launch VM from OVA
 Write-Output "Launch new VM"
-New-VM -ContentLibraryItem $ova -Name $VMName -ResourcePool $Cluster -Location $Folder -Datastore $Datastore -DiskStorageFormat $DiskFormat -Confirm:$false | Out-Null
+New-VM -ContentLibraryItem $ova -OvfConfiguration $ovfConfig -Name $VMName -ResourcePool $VMHost -Location $Folder -Datastore $Datastore -Confirm:$false | Out-Null
 $VM = Get-VM $VMName
 
 if ($VM) {
 
     # Add CD-Drive to VM and mount seed.iso
     Write-Output "Mount seed ISO on VM CD/DVD drive"
-    #$cd = New-CDDrive -VM $VM -StartConnected
-    $cl = Get-ContentLibrary -Name cetech-images
-    $iso = Get-ContentLibraryItem -ContentLibrary $cl -Name cetech-amzn2-seed
-    Get-VM -Name $VMName | Get-CDDrive -Name 'CD/DVD drive 0' |
-    Set-CDDriveCLIso -ContentLibraryIso $iso -Confirm:$false
-    #$cd = Get-VM -Name $VMName | Get-CDDrive
-    #Set-CDDriveCLIso -CDDrive $cd -ContentLibraryIso $iso -Confirm:$false
-    #Get-CDDrive -VM $VM -Name "CD/DVD drive 1" | Out-Null
-    #Set-CDDriveCLIso -VM $VM -ContentLibraryIso $clISO -Confirm:$false | Out-Null
-    #Get-VM $VM | New-CDDrive -VM $VM -ContentLibraryIso $clISO -StartConnected | Out-Null
-    #New-CDDrive -VM $VM -IsoPath "[$DatastoreISO] ISO\Amazon\seed.iso" -StartConnected | Out-Null
+
+    $clib = Get-ContentLibrary -Name $cLibName
+
+    $clibDS = Get-Datastore -Name $clib.Datastore
+    New-PSDrive -Name DS -PSProvider VimDatastore -Root '\' -Location $clibDS | Out-Null
+    $isoPath = Get-ChildItem -Path "DS:" -Recurse -Filter "$($cLibItemName)*.iso" | Select -ExpandProperty DatastoreFullPath
+    Remove-PSDrive -Name DS -Confirm:$false | Out-Null
+    
+    Write-Output "Mount seed ISO on VM CD/DVD drive"
+    New-CDDrive -VM $VM -IsoPath $isoPath -StartConnected | Out-Null
 
     # Boot VM with seed.iso mounted at first boot
     Write-Output "Booting VM"
     Start-VM $VM | Out-Null
 
     # Wait 2 minutes for updates to occur
-    Write-Output "VM Boot and configuration. Wait for 90 seconds..."
-    Start-Sleep -Seconds 90
+    Write-Output "VM Boot and configuration. Wait for 120 seconds..."
+    Start-Sleep -Seconds 120
 
     # Shutdown VM
     Write-Output "Shutdown VM"
     Shutdown-VMGuest $VM -Confirm:$false | Out-Null
 
-    # Wait 30 seconds for power down to occur
-    Write-Output "VM Power Down. Wait for 15 seconds..."
-    Start-Sleep -Seconds 15
+    # Wait 10 seconds for power down to occur
+    Write-Output "VM Power Down. Wait for 10 seconds..."
+    Start-Sleep -Seconds 10
 
     # Remove seed ISO from VM CD/DVD drive
     Write-Output "Remove seed ISO from VM CD/DVD drive"
@@ -184,4 +102,4 @@ if ($VM) {
 
 # Disconnect from VCenter
 Write-Output "Disconnect from VCenter"
-#Disconnect-VIServer $VCenter -Confirm:$false
+Disconnect-VIServer $VCenter -Confirm:$false
