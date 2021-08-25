@@ -10,7 +10,9 @@ param(
     [String]$VMNetwork="VM_Network",
     [String]$VMName="cetech-amzn2",
     [String]$DiskFormat="Thin",
-    [String]$Folder="Templates"
+    [String]$Folder="Templates",
+    [String]$clibName="cetech-images",
+    [String]$clibItemName="seed"
 )
 
 # Import PowerCLI Modules
@@ -36,50 +38,54 @@ if ($template) {
     Write-Output "No existing template found"
 }
 
-# Copy seed.iso file from NAS share to datastore
-# TODO: Replace logic for seed ISO with user data
-Write-Output "Copy seed ISO to local datastore"
-$DatastoreTemp = Get-Datastore $DatastoreISO
-New-PSDrive -Location $DatastoreTemp -Name ds -PSProvider VimDatastore -Root "\" | Out-Null
-Copy-DatastoreItem -Item "\\prodnas\downloads\OVAs\seed.iso" -Destination "ds:\ISO\Amazon\" | Out-Null
-Remove-PSDrive -Name ds | Out-Null
-
 # Fetch OVA from Content Library
 $ova = Get-ContentLibraryItem -ContentLibrary cetech-images -Name cetech-amzn2
 
+# Fetch ISO from Content Library
+$iso = Get-ContentLibraryItem -ContentLibrary cetech-images -Name cetech-amzn2-seed
+
 # Build OVF Configuration for OVA
-Write-Output "Build OVF Configuration"
-$userData = Get-Content -Path '.\user-data' -Raw
-$ovfConfig = Get-OvfConfiguration -ContentLibraryItem $ova -Target $VMHost
+# Write-Output "Build OVF Configuration"
+# $userData = Get-Content -Path '.\user-data' -Raw
+$ovfConfig = Get-OvfConfiguration -ContentLibraryItem $ova -Target $Cluster
 # $ovfConfig.Common.user_data.Value = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($userData))
 $ovfConfig.NetworkMapping.bridged.Value = $VMNetwork
 
 # Launch VM from OVA
 Write-Output "Launch new VM"
-New-VM -ContentLibraryItem $ova -Name $VMName -VMHost $VMHost -Location $Folder -Datastore $Datastore -DiskStorageFormat $DiskFormat -Confirm:$false | Out-Null
+New-VM -ContentLibraryItem $ova -OvfConfiguration $ovfConfig -Name $VMName -ResourcePool $VMHost -Location $Folder -Datastore $Datastore -Confirm:$false | Out-Null
 $VM = Get-VM $VMName
 
 if ($VM) {
 
     # Add CD-Drive to VM and mount seed.iso
     Write-Output "Mount seed ISO on VM CD/DVD drive"
-    New-CDDrive -VM $VM -IsoPath "[$DatastoreISO] ISO\Amazon\seed.iso" -StartConnected | Out-Null
+
+    $clib = Get-ContentLibrary -Name $cLibName
+
+    $clibDS = Get-Datastore -Name $clib.Datastore
+    New-PSDrive -Name DS -PSProvider VimDatastore -Root '\' -Location $clibDS | Out-Null
+    $isoPath = Get-ChildItem -Path "DS:" -Recurse -Filter "$($cLibItemName)*.iso" | Select -ExpandProperty DatastoreFullPath
+    Remove-PSDrive -Name DS -Confirm:$false | Out-Null
+    
+    Write-Output "Mount seed ISO on VM CD/DVD drive"
+    New-CDDrive -VM $VM -IsoPath $isoPath -StartConnected | Out-Null
 
     # Boot VM with seed.iso mounted at first boot
     Write-Output "Booting VM"
     Start-VM $VM | Out-Null
 
     # Wait 2 minutes for updates to occur
-    Write-Output "VM Boot and configuration. Wait for 90 seconds..."
-    Start-Sleep -Seconds 90
+    Write-Output "VM Boot and configuration. Wait for 120 seconds..."
+    Start-Sleep -Seconds 120
 
     # Shutdown VM
     Write-Output "Shutdown VM"
     Shutdown-VMGuest $VM -Confirm:$false | Out-Null
 
-    # Wait 30 seconds for power down to occur
-    Write-Output "VM Power Down. Wait for 15 seconds..."
-    Start-Sleep -Seconds 15
+    # Wait 10 seconds for power down to occur
+    Write-Output "VM Power Down. Wait for 10 seconds..."
+    Start-Sleep -Seconds 10
 
     # Remove seed ISO from VM CD/DVD drive
     Write-Output "Remove seed ISO from VM CD/DVD drive"
@@ -96,4 +102,4 @@ if ($VM) {
 
 # Disconnect from VCenter
 Write-Output "Disconnect from VCenter"
-#Disconnect-VIServer $VCenter -Confirm:$false
+Disconnect-VIServer $VCenter -Confirm:$false
