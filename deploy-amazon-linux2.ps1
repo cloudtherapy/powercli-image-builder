@@ -11,7 +11,7 @@ param(
     [String]$DiskFormat="Thin",
     [String]$Folder="Templates",
     [String]$clibName="cetech-images",
-    [String]$clibItemName="seed"
+    [String]$clibItemName="cetech-amzn2-seed"
 )
 
 # Import PowerCLI Modules
@@ -43,10 +43,10 @@ if ($template) {
 }
 
 # Fetch OVA from Content Library
-$ova = Get-ContentLibraryItem -ContentLibrary cetech-images -Name cetech-amzn2
+$ova = Get-ContentLibraryItem -ContentLibrary $clibName -Name $VMName
 
 # Fetch ISO from Content Library
-$iso = Get-ContentLibraryItem -ContentLibrary cetech-images -Name cetech-amzn2-seed
+$iso = Get-ContentLibraryItem -ContentLibrary $clibName -Name $clibItemName
 
 # Build OVF Configuration for OVA
 # Write-Output "Build OVF Configuration"
