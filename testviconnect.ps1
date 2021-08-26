@@ -18,7 +18,7 @@ param(
 Import-Module VMware.VimAutomation.Core
 
 # Set connection for SSL to Warn
-Set-PowerCLIConfiguration -Scope User -InvalidCertificateAction Ignore -Confirm:$false
+#Set-PowerCLIConfiguration -Scope User -InvalidCertificateAction Ignore -Confirm:$false
 
 # Connect to VCenter (Prompt for user credentials)
 Write-Output "Connect to VCenter"
