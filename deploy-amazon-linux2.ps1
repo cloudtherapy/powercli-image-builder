@@ -48,9 +48,9 @@ if ($env:vcenter_pass) {
 
 Connect-VIServer $VCenter -User administrator@vsphere.local -Password $env:vcenter_pass | Out-Null
 if ($global:defaultviserver.Name -eq $VCenter) {
-    Write-Output "Valid VCenter Connected"
+    Write-Output "VCenter Connected Successfully"
 } else {
-    Write-Output "Please enter a valid VCenter connection"
+    Write-Output "VCenter Connection Unsuccessful. Please validate connectivity and credentials"
     exit 1
 }
 
