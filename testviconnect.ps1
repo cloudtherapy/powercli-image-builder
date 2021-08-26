@@ -17,6 +17,9 @@ param(
 # Import PowerCLI Modules
 Import-Module VMware.VimAutomation.Core
 
+# Set connection for SSL to Warn
+Set-PowerCLIConfiguration -Scope User -InvalidCertificateAction Warn -Confirm:$false
+
 # Connect to VCenter (Prompt for user credentials)
 Write-Output "Connect to VCenter"
 Connect-VIServer $VCenter -User administrator@vsphere.local -Password CETechPass123!
