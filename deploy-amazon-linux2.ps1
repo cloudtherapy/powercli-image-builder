@@ -38,11 +38,6 @@ Set-PowerCLIConfiguration -Scope User -InvalidCertificateAction Ignore -Confirm:
 # Import PowerCLI Modules
 Import-Module VMware.VimAutomation.Core
 
-# Import credentials from file
-#$credential = Import-Clixml -Path admin.cred
-
-
-
 # Connect to VCenter (Prompt for user credentials)
 if ($env:vcenter_pass) {
     Write-Output "Connect to VCenter"  
@@ -51,7 +46,7 @@ if ($env:vcenter_pass) {
     exit 1
 }
 
-Connect-VIServer $VCenter -User administrator@vsphere.local -Password $env:hci_vcenter_pass | Out-Null
+Connect-VIServer $VCenter -User administrator@vsphere.local -Password $env:vcenter_pass | Out-Null
 
 # vSphere Cluster + Network configuration parameters
 $Cluster = Get-Cluster -Name $ClusterName
