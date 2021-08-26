@@ -3,16 +3,33 @@
 # Deployment of Amazon Linux 2 in vCenter/vSphere
 
 param(
-    [String]$VCenter="hci-vcenter.cetech-ne.local",
-    [String]$ClusterName="NTAP",
-    [String]$DatastoreCluster="NetApp-HCI-Datastore",
-    [String]$VMNetwork="VM_Network",
+    [String]$Environment="hci"
     [String]$VMName="cetech-amzn2",
     [String]$DiskFormat="Thin",
     [String]$Folder="Templates",
     [String]$clibName="cetech-images",
     [String]$clibItemName="cetech-amzn2-seed"
 )
+
+if ($Environment -eq "hci") {
+    $VCenter="hci-vcenter.cetech-ne.local",
+    $ClusterName="NTAP",
+    $DatastoreCluster="NetApp-HCI-Datastore",
+    $VMNetwork="VM_Network"
+} elseif ($Environment -eq "norwood") {
+    $VCenter="norw-vcenter.cetech-ne.local",
+    $ClusterName="HP 320",
+    $DatastoreCluster="",
+    $VMNetwork="VM Network"
+} elseif ($Environment -eq "ntnx") {
+    $VCenter="ntnx-vcenter.cetech-ne.local",
+    $ClusterName="",
+    $DatastoreCluster="",
+    $VMNetwork="VM Network"
+} else {
+    Write-Output "Please enter a valid environment: hci,norwood,ntnx"
+    exit 1
+}
 
 # Do not participate in CEIP and ignore SSL warning for vcenter connection
 Set-PowerCLIConfiguration -Scope User -ParticipateInCEIP $false -Confirm:$false | Out-Null
@@ -34,7 +51,7 @@ if ($env:vcenter_pass) {
     exit 1
 }
 
-Connect-VIServer $VCenter -User administrator@vsphere.local -Password $env:vcenter_pass | Out-Null
+Connect-VIServer $VCenter -User administrator@vsphere.local -Password $env:hci_vcenter_pass | Out-Null
 
 # vSphere Cluster + Network configuration parameters
 $Cluster = Get-Cluster -Name $ClusterName
