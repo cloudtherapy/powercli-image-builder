@@ -15,7 +15,7 @@ param(
 )
 
 # Ignore SSL warning for vcenter connection
-Set-PowerCLIConfiguration -Scope User -InvalidCertificateAction Ignore -Confirm:$false
+Set-PowerCLIConfiguration -Scope User -InvalidCertificateAction Ignore -Confirm:$false | Out-Null
 
 # Import PowerCLI Modules
 Import-Module VMware.VimAutomation.Core
@@ -23,12 +23,12 @@ Import-Module VMware.VimAutomation.Core
 # Connect to VCenter (Prompt for user credentials)
 Write-Output "Connect to VCenter"
 Set-PowerCLIConfiguration -Scope User -InvalidCertificateAction Ignore -Confirm:$false
-Connect-VIServer $VCenter -User administrator@vsphere.local -Password CETechPass123!
+Connect-VIServer $VCenter -User administrator@vsphere.local -Password CETechPass123! | Out-Null
 
 # vSphere Cluster + Network configuration parameters
 $Cluster = Get-Cluster -Name $ClusterName
 # TODO: VM Host is selected by memory. Review for improvement.
-$VMHost = Get-Cluster $Cluster | Get-VMHost | Sort MemoryGB | Select -first 1
+$VMHost = Get-Cluster $Cluster | Get-VMHost | Sort-Object MemoryGB | Select -first 1
 
 if ($ClusterName -eq "Lenovo-NTNX") {
     $Datastore = Get-Datastore -Name $DatastoreCluster
