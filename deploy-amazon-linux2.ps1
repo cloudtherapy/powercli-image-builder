@@ -11,17 +11,17 @@ param(
     [String]$clibItemName="cetech-amzn2-seed"
 )
 
-if ($Environment -eq "hci") {
+if ($Environment.ToLower() -eq "hci") {
     $VCenter="hci-vcenter.cetech-ne.local"
     $ClusterName="NTAP"
     $DatastoreCluster="NetApp-HCI-Datastore"
     $VMNetwork="VM_Network"
-} elseif ($Environment -eq "norwood") {
+} elseif ($Environment.ToLower() -eq "norwood") {
     $VCenter="norw-vcenter.cetech-ne.local"
     $ClusterName="HP 320"
     $DatastoreCluster="pure_ds"
     $VMNetwork="VM Network"
-} elseif ($Environment -eq "ntnx") {
+} elseif ($Environment.ToLower() -eq "ntnx") {
     $VCenter="ntnx-vcenter.cetech-ne.local"
     $ClusterName="Lenovo-NTNX"
     $DatastoreCluster="default-container-esx"
