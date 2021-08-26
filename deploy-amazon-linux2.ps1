@@ -19,12 +19,12 @@ if ($Environment -eq "hci") {
 } elseif ($Environment -eq "norwood") {
     $VCenter="norw-vcenter.cetech-ne.local"
     $ClusterName="HP 320"
-    $DatastoreCluster=""
+    $DatastoreCluster="pure_ds"
     $VMNetwork="VM Network"
 } elseif ($Environment -eq "ntnx") {
     $VCenter="ntnx-vcenter.cetech-ne.local"
-    $ClusterName=""
-    $DatastoreCluster=""
+    $ClusterName="Lenovo-NTNX"
+    $DatastoreCluster="default-container-esx"
     $VMNetwork="VM Network"
 } else {
     Write-Output "Please enter a valid environment: hci,norwood,ntnx"
