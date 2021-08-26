@@ -14,6 +14,9 @@ param(
     [String]$clibItemName="cetech-amzn2-seed"
 )
 
+# Ignore SSL warning for vcenter connection
+Set-PowerCLIConfiguration -Scope User -InvalidCertificateAction Ignore -Confirm:$false
+
 # Import PowerCLI Modules
 Import-Module VMware.VimAutomation.Core
 
