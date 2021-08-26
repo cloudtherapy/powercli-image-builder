@@ -12,19 +12,19 @@ param(
 )
 
 if ($Environment -eq "hci") {
-    $VCenter="hci-vcenter.cetech-ne.local",
-    $ClusterName="NTAP",
-    $DatastoreCluster="NetApp-HCI-Datastore",
+    $VCenter="hci-vcenter.cetech-ne.local"
+    $ClusterName="NTAP"
+    $DatastoreCluster="NetApp-HCI-Datastore"
     $VMNetwork="VM_Network"
 } elseif ($Environment -eq "norwood") {
-    $VCenter="norw-vcenter.cetech-ne.local",
-    $ClusterName="HP 320",
-    $DatastoreCluster="",
+    $VCenter="norw-vcenter.cetech-ne.local"
+    $ClusterName="HP 320"
+    $DatastoreCluster=""
     $VMNetwork="VM Network"
 } elseif ($Environment -eq "ntnx") {
-    $VCenter="ntnx-vcenter.cetech-ne.local",
-    $ClusterName="",
-    $DatastoreCluster="",
+    $VCenter="ntnx-vcenter.cetech-ne.local"
+    $ClusterName=""
+    $DatastoreCluster=""
     $VMNetwork="VM Network"
 } else {
     Write-Output "Please enter a valid environment: hci,norwood,ntnx"
