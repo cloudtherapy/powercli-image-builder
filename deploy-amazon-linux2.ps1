@@ -47,6 +47,12 @@ if ($env:vcenter_pass) {
 }
 
 Connect-VIServer $VCenter -User administrator@vsphere.local -Password $env:vcenter_pass | Out-Null
+if ($global:defaultviserver.Name -eq $VCenter) {
+    Write-Output "Valid VCenter Connected"
+} else {
+    Write-Output "Please enter a valid VCenter connection"
+    exit 1
+}
 
 # vSphere Cluster + Network configuration parameters
 $Cluster = Get-Cluster -Name $ClusterName
