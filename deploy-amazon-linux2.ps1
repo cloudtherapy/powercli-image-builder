@@ -27,7 +27,7 @@ $Cluster = Get-Cluster -Name $ClusterName
 $VMHost = Get-Cluster $Cluster | Get-VMHost | Sort MemoryGB | Select -first 1
 
 if ($ClusterName -eq "Lenovo-NTNX") {
-    $Datastore = Get-Datastore -Name "default-container-esx"
+    $Datastore = Get-Datastore -Name $DatastoreCluster
 } else {
     $Datastore = Get-DatastoreCluster -Name $DatastoreCluster
 }
