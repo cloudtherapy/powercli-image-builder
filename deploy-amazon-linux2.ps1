@@ -3,7 +3,7 @@
 # Deployment of Amazon Linux 2 in vCenter/vSphere
 
 param(
-    [String]$Environment="hci"
+    [String]$Environment="hci",
     [String]$VMName="cetech-amzn2",
     [String]$DiskFormat="Thin",
     [String]$Folder="Templates",
