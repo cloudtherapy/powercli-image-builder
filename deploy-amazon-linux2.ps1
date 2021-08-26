@@ -23,7 +23,6 @@ Import-Module VMware.VimAutomation.Core
 
 # Connect to VCenter (Prompt for user credentials)
 Write-Output "Connect to VCenter"
-Set-PowerCLIConfiguration -Scope User -InvalidCertificateAction Ignore -Confirm:$false
 Connect-VIServer $VCenter -User administrator@vsphere.local -Password CETechPass123! | Out-Null
 
 # vSphere Cluster + Network configuration parameters
