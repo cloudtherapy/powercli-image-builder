@@ -14,7 +14,8 @@ param(
     [String]$clibItemName="cetech-amzn2-seed"
 )
 
-# Ignore SSL warning for vcenter connection
+# Do not participate in CEIP and ignore SSL warning for vcenter connection
+Set-PowerCLIConfiguration -Scope User -ParticipateInCEIP $false | Out-Null
 Set-PowerCLIConfiguration -Scope User -InvalidCertificateAction Ignore -Confirm:$false | Out-Null
 
 # Import PowerCLI Modules
