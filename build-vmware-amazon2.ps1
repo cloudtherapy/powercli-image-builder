@@ -2,102 +2,150 @@
 # www.cloudmethodsllc.com
 # Deployment of Amazon Linux 2 in vCenter/vSphere
 
+<#
+    .SYNOPSIS
+    Build and customize an Amazon Linux 2 virtual machine in VMWare
+
+    .DESCRIPTION
+    Deploy an Amazon Linux 2 virtual machine (VM) from OVA. Customize the image with
+    user-data at launch. After customization, shutdown the VM and convert to template.
+
+    .PARAMETER Environment
+    Specify target VCenter environment: hci, norwood, ntnx
+
+    .INPUTS
+    None. You cannot pipe objects to Add-Extension.
+
+    .OUTPUTS
+    System.String. Add-Extension returns a string with the extension or file name.
+
+    .EXAMPLE
+    PS> extension -name "File"
+    File.txt
+
+    .EXAMPLE
+    PS> extension -name "File" -extension "doc"
+    File.doc
+
+    .EXAMPLE
+    PS> extension "File" "doc"
+    File.doc
+
+    .LINK
+    Online version: http://www.fabrikam.com/extension.html
+
+#>
+
 param(
-    [String]$Environment="hci",
-    [String]$VMName="cetech-amzn2",
-    [String]$DiskFormat="Thin",
-    [String]$Folder="Templates",
-    [String]$clibName="cetech-images",
-    [String]$clibItemName="cetech-amzn2-seed"
+    [String] $VCenter="hci",
+    [String] $VMName="cetech-amzn2",
+    [String] $DiskFormat="Thin",
+    [String] $Folder="Templates",
+    [String] $SourceContentLibrary="cetech-images",
+    [String] $SourceOva = "cetech-amzn2",
+    [String] $SeedIso="cetech-amzn2-seed",
+    [String] $VCServer,
+    [String] $ClusterName,
+    [String] $DatastoreName,
+    [String] $NetworkName
 )
 
-if ($Environment.ToLower() -eq "hci") {
-    $VCenter="hci-vcenter.cetech-ne.local"
+# Validate custom input
+if ($VCServer -And $ClusterName -And $DatastoreName -And $NetworkName) {
+    $VCenter = "custom"
+}
+
+# Convert VCenter parameter to lowercase to disable case sensitivity
+$Environment = $VCenter.ToLower()
+if ($Environment -eq "custom") {
+    Write-Output("Custom VCenter: ${VCServer}")
+} elseif ($Environment -eq "hci") {
+    Write-Output("HCI VCenter (TierPoint)")
+    $VCServer="hci-vcenter.cetech-ne.local"
     $ClusterName="NTAP"
-    $DatastoreCluster="NetApp-HCI-Datastore"
-    $VMNetwork="VM_Network"
-} elseif ($Environment.ToLower() -eq "norwood") {
-    $VCenter="norw-vcenter.cetech-ne.local"
+    $DatastoreName="NetApp-HCI-Datastore"
+    $NetworkName="VM_Network"
+} elseif ($Environment -eq "norwood") {
+    Write-Output("Norwood VCenter (Norwood, MA)")
+    $VCServer="norw-vcenter.cetech-ne.local"
     $ClusterName="HP 320"
-    $DatastoreCluster="pure_ds"
-    $VMNetwork="VM Network"
-} elseif ($Environment.ToLower() -eq "ntnx") {
-    $VCenter="ntnx-vcenter.cetech-ne.local"
+    $DatastoreName="pure_ds"
+    $NetworkName="VM Network"
+} elseif ($Environment -eq "ntnx") {
+    Write-Output("Nutanix VCenter (Flemington, NJ)")
+    $VCServer="ntnx-vcenter.cetech-ne.local"
     $ClusterName="Lenovo-NTNX"
-    $DatastoreCluster="default-container-esx"
-    $VMNetwork="VM Network"
+    $DatastoreName="default-container-esx"
+    $NetworkName="VM Network"
 } else {
-    Write-Output "Please enter a valid environment: hci,norwood,ntnx"
+    Write-Output "ERROR: Unknown VCenter. Valid environments: hci,norwood,ntnx"
     exit 1
 }
 
-# Do not participate in CEIP and ignore SSL warning for vcenter connection
-Set-PowerCLIConfiguration -Scope User -ParticipateInCEIP $false -Confirm:$false | Out-Null
+# Ignore SSL warning for VCenter connection
 Set-PowerCLIConfiguration -Scope User -InvalidCertificateAction Ignore -Confirm:$false | Out-Null
 
 # Import PowerCLI Modules
-Import-Module VMware.VimAutomation.Core
+Import-Module VMware.VimAutomation.Core -WarningAction SilentlyContinue
 
-# Connect to VCenter (Prompt for user credentials)
+# Connect to VCenter 
 if ($env:vcenter_pass) {
-    Write-Output "Connect to VCenter"  
+    Write-Output "Connect to VCenter ${VCServer}"
+    Connect-VIServer $VCServer -User administrator@vsphere.local -Password $env:vcenter_pass | Out-Null
 } else {
-    Write-Output "Please set environment variable vcenter_pass"
+    Write-Output "ERROR: Please set environment variable vcenter_pass"
     exit 1
 }
 
-Connect-VIServer $VCenter -User administrator@vsphere.local -Password $env:vcenter_pass | Out-Null
-if ($global:defaultviserver.Name -eq $VCenter) {
-    Write-Output "VCenter Connected Successfully"
+# Verify VCenter Connection
+if ($global:defaultviserver.Name -eq $VCServer) {
+    Write-Output "VCenter Connection Successful"
 } else {
-    Write-Output "VCenter Connection Unsuccessful. Please validate connectivity and credentials"
+    Write-Output "ERROR: VCenter Connection Failed. Please validate connectivity and credentials"
     exit 1
 }
 
-# vSphere Cluster + Network configuration parameters
+# Configure target environment
+## ESX Cluster
 $Cluster = Get-Cluster -Name $ClusterName
-# TODO: VM Host is selected by memory. Review for improvement.
-$VMHost = Get-Cluster $Cluster | Get-VMHost | Sort-Object MemoryGB | Select -first 1
-
+## ESX Server
+$VMHost = Get-Cluster $Cluster | Get-VMHost | Sort-Object MemoryGB | Select-Object -first 1
+## Datastore
 if ($ClusterName -eq "Lenovo-NTNX") {
-    $Datastore = Get-Datastore -Name $DatastoreCluster
+    $Datastore = Get-Datastore -Name $DatastoreName
 } else {
-    $Datastore = Get-DatastoreCluster -Name $DatastoreCluster
+    $Datastore = Get-DatastoreCluster -Name $DatastoreName
 }
-    
 
-# Delete existing template
+# Cleanup existing template, if found
 $template = Get-Template $VMName -ErrorAction SilentlyContinue
 if ($template) {
     Write-Output "Existing template found. Removing existing template"
     Remove-Template -Template $VMName -DeletePermanently -Confirm:$false | Out-Null
-} else {
-    Write-Output "No existing template found"
 }
 
-# Fetch OVA from Content Library
-$ova = Get-ContentLibraryItem -ContentLibrary $clibName -Name $VMName
-
-# Fetch ISO from Content Library
-$iso = Get-ContentLibraryItem -ContentLibrary $clibName -Name $clibItemName
+# Fetch OVA and Seed ISO rom Content Library
+$ova = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceOva
+$seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SeedIso
 
 # Build OVF Configuration for OVA
 # Write-Output "Build OVF Configuration"
 # $userData = Get-Content -Path '.\user-data' -Raw
 $ovfConfig = Get-OvfConfiguration -ContentLibraryItem $ova -Target $Cluster
 # $ovfConfig.Common.user_data.Value = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($userData))
-$ovfConfig.NetworkMapping.bridged.Value = $VMNetwork
+$ovfConfig.NetworkMapping.bridged.Value = $NetworkName
 
 # Launch VM from OVA
 Write-Output "Launch new VM"
 New-VM -ContentLibraryItem $ova -OvfConfiguration $ovfConfig -Name $VMName -ResourcePool $VMHost -Location $Folder -Datastore $Datastore -Confirm:$false | Out-Null
 $VM = Get-VM $VMName
 
+# Continue if VM launched successfully
 if ($VM) {
     
     # Add CD-Drive to VM and mount seed.iso
     Write-Output "Mount seed ISO on VM CD/DVD drive"
-    New-CDDrive -VM $VM -ContentLibraryIso $iso | Out-Null
+    New-CDDrive -VM $VM -ContentLibraryIso $seed_iso | Out-Null
 
     # Boot VM with seed.iso mounted at first boot
     Write-Output "Booting VM"
@@ -125,9 +173,9 @@ if ($VM) {
     Get-VM -Name $VMName | Set-VM -ToTemplate -Confirm:$false | Out-Null
 
 } else {
-    Write-Output "VM Failed to launch"
+    Write-Output "ERROR: VM Failed to launch"
 }
 
 # Disconnect from VCenter
 Write-Output "Disconnect from VCenter"
-Disconnect-VIServer $VCenter -Confirm:$false
+Disconnect-VIServer $VCServer -Confirm:$false
