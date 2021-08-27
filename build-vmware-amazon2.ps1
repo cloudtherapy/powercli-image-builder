@@ -14,25 +14,33 @@
     Specify target VCenter environment: hci, norwood, ntnx
 
     .INPUTS
-    None. You cannot pipe objects to Add-Extension.
+    None.
 
     .OUTPUTS
-    System.String. Add-Extension returns a string with the extension or file name.
+    None.
 
     .EXAMPLE
-    PS> extension -name "File"
-    File.txt
+    Build image in TierPoint cluster:
+
+    PS> build-vmware-amazon2.ps1 -VCenter hci
 
     .EXAMPLE
-    PS> extension -name "File" -extension "doc"
-    File.doc
+    Build image in Norwood cluster:
+
+    PS> build-vmware-amazon2.ps1 -VCenter norwood
 
     .EXAMPLE
-    PS> extension "File" "doc"
-    File.doc
+    Build image in Nutanix cluster:
+
+    PS> build-vmware-amazon2.ps1 -VCenter ntnx
+
+    .EXAMPLE
+    Build image in custom VCenter cluster:
+
+    PS> build-vmware-amazon2.ps1 -VCServer vcenter.local -ClusterName ESX_Cluster -DatastoreName Storage1 -Network Name VM_Network
 
     .LINK
-    Online version: http://www.fabrikam.com/extension.html
+    https://github.com/cloudmethods/powercli-image-builder/
 
 #>
 
