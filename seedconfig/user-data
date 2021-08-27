@@ -1,4 +1,4 @@
-﻿#cloud-config
+#cloud-config
 #vim:syntax=yaml
 users:
 # A user by the name `ec2-user` is created in the image by default.
@@ -49,3 +49,6 @@ write_files:
     content: |
       # Enable password authentication after first boot
       ssh_pwauth: True
+
+runcmd:
+    - shutdown
