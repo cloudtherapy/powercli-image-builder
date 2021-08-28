@@ -160,30 +160,36 @@ if ($VM) {
     Start-VM $VM | Out-Null
 
     # Wait 2 minutes for updates to occur
-    Write-Output "VM Boot and configuration. Wait for 120 seconds..."
-    Start-Sleep -Seconds 120
+    #Write-Output "VM Boot and configuration. Wait for 120 seconds..."
+    #Start-Sleep -Seconds 120
 
     # Shutdown VM
-    Write-Output "Shutdown VM"
-    Shutdown-VMGuest $VM -Confirm:$false | Out-Null
+    #Write-Output "Shutdown VM"
+    #Shutdown-VMGuest $VM -Confirm:$false | Out-Null
 
     # Wait 15 seconds for power down to occur
-    Write-Output "VM Power Down. Wait for 15 seconds..."
-    Start-Sleep -Seconds 15
+    #Write-Output "VM Power Down. Wait for 15 seconds..."
+    #Start-Sleep -Seconds 15
 
-    # Remove seed ISO from VM CD/DVD drive
-    Write-Output "Remove seed ISO from VM CD/DVD drive"
-    Remove-CDDrive -CD (Get-CDDrive -VM $VM) -Confirm:$false | Out-Null
+    $vm_state = (Get-VM -Name $VMName).PowerState
 
-    # Convert VM to Template
-    # TODO: Output to Content Library
-    Write-Output "Convert VM to Template"
-    Get-VM -Name $VMName | Set-VM -ToTemplate -Confirm:$false | Out-Null
+    if ($vm_state -eq "PoweredOff") {
 
-} else {
-    Write-Output "ERROR: VM Failed to launch"
+        # Remove seed ISO from VM CD/DVD drive
+        Write-Output "Remove seed ISO from VM CD/DVD drive"
+        Remove-CDDrive -CD (Get-CDDrive -VM $VM) -Confirm:$false | Out-Null
+
+        # Convert VM to Template
+        # TODO: Output to Content Library
+        Write-Output "Convert VM to Template"
+        Get-VM -Name $VMName | Set-VM -ToTemplate -Confirm:$false | Out-Null
+    } else {
+        Write-Output "ERROR: VM Failed to power down"
+    }
+
+    } else {
+        Write-Output "ERROR: VM Failed to launch"
 }
-
 # Disconnect from VCenter
 Write-Output "Disconnect from VCenter"
 Disconnect-VIServer $VCServer -Confirm:$false

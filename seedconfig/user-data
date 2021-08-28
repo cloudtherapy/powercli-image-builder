@@ -17,26 +17,15 @@ users:
 # In the above line, do not add any spaces after 'ec2-user:'.
 
 runcmd:
-    - yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-    - [ sh, -xc, "echo $(date) ': hello world!'" ]
-    - [ sh, -c, echo "=========hello world'=========" ]
+  - yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
 packages:
-    - libselinux-python
-    - firewalld
-    - ansible
+  - libselinux-python
+  - firewalld
+  - ansible
 
 package_update: true
 package_upgrade: true
-
-#runcmd:
-#  - yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-#  - yum install -y libselinux-python
-#  - yum install -y firewalld
-#  - yum install -y ansible
-#  - yum update -y
-
-# package_upgrade: true
 
 # NOTE: Cloud-init applies network settings on every boot by default. To retain network settings from first boot, add following ‘write_files’ section:
 write_files:
@@ -50,5 +39,7 @@ write_files:
       # Enable password authentication after first boot
       ssh_pwauth: True
 
-runcmd:
-    - shutdown
+power_state:
+  mode: poweroff
+  timeout: 10
+  condition: True
