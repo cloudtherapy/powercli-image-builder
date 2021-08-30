@@ -216,7 +216,6 @@ if ($VM) {
     Write-Output "ERROR: VM Failed to launch"
 }
 
-
 # Disconnect from VCenter
 Write-Output "Disconnect from VCenter"
 Disconnect-VIServer $VCServer -Confirm:$false
