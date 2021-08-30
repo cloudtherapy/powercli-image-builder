@@ -52,6 +52,7 @@ param(
     [String] $SourceContentLibrary="cetech-images",
     [String] $SourceOva = "cetech-amzn2",
     [String] $SeedIso="cetech-amzn2-seed",
+    [bool] $UpdateSeedIso=$False,
     [String] $VCServer,
     [String] $ClusterName,
     [String] $DatastoreName,
@@ -136,6 +137,13 @@ if ($template) {
 $ova = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceOva
 $seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SeedIso
 
+# Update seed.iso in ContentLibrary when variable set to True
+if ($UpdateSeedIso -eq $True -And $VCenter -eq "hci") {
+    Write-Output "Updating existing seed.iso file in the Content Library"
+    $seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
+    Set-ContentLibraryItem -ContentLibraryItem $SeedIso -Files $seedfile.Path | Out-Null
+}
+
 # Build OVF Configuration for OVA
 # Write-Output "Build OVF Configuration"
 # $userData = Get-Content -Path '.\user-data' -Raw
@@ -160,8 +168,8 @@ if ($VM) {
     Start-VM $VM | Out-Null
 
     # Wait 2 minutes for updates to occur
-    #Write-Output "VM Boot and configuration. Wait for 120 seconds..."
-    #Start-Sleep -Seconds 120
+    #Write-Output "VM Boot and configuration. Wait for 180 seconds..."
+    #Start-Sleep -Seconds 180
 
     # Shutdown VM
     #Write-Output "Shutdown VM"
@@ -172,24 +180,35 @@ if ($VM) {
     #Start-Sleep -Seconds 15
 
     $vm_state = (Get-VM -Name $VMName).PowerState
+    $time = 0
 
-    if ($vm_state -eq "PoweredOff") {
-
-        # Remove seed ISO from VM CD/DVD drive
-        Write-Output "Remove seed ISO from VM CD/DVD drive"
-        Remove-CDDrive -CD (Get-CDDrive -VM $VM) -Confirm:$false | Out-Null
-
-        # Convert VM to Template
-        # TODO: Output to Content Library
-        Write-Output "Convert VM to Template"
-        Get-VM -Name $VMName | Set-VM -ToTemplate -Confirm:$false | Out-Null
-    } else {
-        Write-Output "ERROR: VM Failed to power down"
+    while ($vm_state -ne "PoweredOff") {
+        Write-Output "Waiting $time seconds for VM to Power Down"
+        Start-Sleep -Seconds 1
+        $time = $time + 1
+        $vm_state = (Get-VM -Name $VMName).PowerState
+        if ($time -eq 300) {
+            Write-Output "ERROR: VM Failed to Power Down"
+            Stop-VM $VM -Confirm:$false | Out-Null
+            Remove-VM -VM $VM -Confirm:$False | Out-Null
+            exit 1
+        }
+            
     }
+
+    # Remove seed ISO from VM CD/DVD drive
+    Write-Output "Remove seed ISO from VM CD/DVD drive"
+    Remove-CDDrive -CD (Get-CDDrive -VM $VM) -Confirm:$false | Out-Null
+
+    # Convert VM to Template
+    # TODO: Output to Content Library
+    Write-Output "Convert VM to Template"
+    Get-VM -Name $VMName | Set-VM -ToTemplate -Confirm:$false | Out-Null
 
     } else {
         Write-Output "ERROR: VM Failed to launch"
 }
+
 # Disconnect from VCenter
 Write-Output "Disconnect from VCenter"
 Disconnect-VIServer $VCServer -Confirm:$false
