@@ -50,7 +50,9 @@ param(
     [String] $DiskFormat="Thin",
     [String] $Folder="Templates",
     [String] $SourceContentLibrary="methods-images",
+    [String] $TargetContentLibrary="methods-images",
     [String] $SourceOva = "methods-amazon2",
+    [String] $TargetOva = "methods-amazon2",
     [String] $SourceIso="amazon2-seed",
     [Switch] $UpdateSeedIso,
     [String] $VCServer,
@@ -133,10 +135,6 @@ if ($template) {
     Remove-Template -Template $VMName -DeletePermanently -Confirm:$false | Out-Null
 }
 
-# Fetch OVA and Seed ISO rom Content Library
-$ova = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceOva
-
-
 # Update seed.iso in ContentLibrary when variable set to True
 $seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceIso -ErrorAction SilentlyContinue
 $seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
@@ -198,14 +196,22 @@ if ($VM) {
     Write-Output "Remove seed ISO from VM CD/DVD drive"
     Remove-CDDrive -CD (Get-CDDrive -VM $VM) -Confirm:$false | Out-Null
 
-    # Convert VM to Template
-    # TODO: Output to Content Library
-    Write-Output "Convert VM to Template"
-    Get-VM -Name $VMName | Set-VM -ToTemplate -Confirm:$false | Out-Null
-
+    # Creating Template from VM and storing in Content Library
+    Write-Output "Convert VM to Template and store in Content Library"
+    $target = Get-ContentLibraryItem -ContentLibrary $TargetContentLibrary -Name $TargetOva
+    if ($target) {
+        Write-Output "Updating existing VM Temaplte in Content Library"
+        Set-ContentLibraryItem -ContentLibraryItem $target -VM $VMName 
     } else {
-        Write-Output "ERROR: VM Failed to launch"
+        Write-Output "VM template not found. Creating Content Library item"
+        New-ContentLibraryItem -ContentLibrary $TargetContentLibrary -VM $VMName -Name $TargetOva
+    }
+    Write-Output "Deleting VM"
+    Remove-VM -VM $VM -Confirm:$False | Out-Null
+} else {
+    Write-Output "ERROR: VM Failed to launch"
 }
+
 
 # Disconnect from VCenter
 Write-Output "Disconnect from VCenter"
