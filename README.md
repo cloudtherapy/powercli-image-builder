@@ -7,4 +7,4 @@ Requirements:
 - #TODO: Figure out how to deploy in Hyper-V
 - You must create a *seed.iso* file which includes the meta-data and user-data files
   - meta-data sets the initial hostname and network preference (DHCP)
-  - user-data sets the ec2-user password, creates an ansible user and associates its public SSH key
+  - user-data creates an ansible user and associates its public SSH key
