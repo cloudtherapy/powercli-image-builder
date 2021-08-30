@@ -135,6 +135,9 @@ if ($template) {
     Remove-Template -Template $VMName -DeletePermanently -Confirm:$false | Out-Null
 }
 
+# Fetch OVA and Seed ISO rom Content Library
+$ova = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceOva
+
 # Update seed.iso in ContentLibrary when variable set to True
 $seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceIso -ErrorAction SilentlyContinue
 $seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
