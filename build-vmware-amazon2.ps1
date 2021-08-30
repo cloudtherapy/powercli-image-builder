@@ -52,7 +52,7 @@ param(
     [String] $SourceContentLibrary="cetech-images",
     [String] $SourceOva = "cetech-amzn2",
     [String] $SeedIso="cetech-amzn2-seed",
-    [bool] $UpdateSeedIso=$False,
+    [Switch] $UpdateSeedIso,
     [String] $VCServer,
     [String] $ClusterName,
     [String] $DatastoreName,
@@ -138,7 +138,7 @@ $ova = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $Sourc
 $seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SeedIso
 
 # Update seed.iso in ContentLibrary when variable set to True
-if ($UpdateSeedIso -eq $True -And $VCenter -eq "hci") {
+if ($UpdateSeedIso -And $VCenter -eq "hci") {
     Write-Output "Updating existing seed.iso file in the Content Library"
     $seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
     Set-ContentLibraryItem -ContentLibraryItem $SeedIso -Files $seedfile.Path | Out-Null
