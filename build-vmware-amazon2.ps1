@@ -167,25 +167,15 @@ if ($VM) {
     Write-Output "Booting VM"
     Start-VM $VM | Out-Null
 
-    # Wait 2 minutes for updates to occur
-    #Write-Output "VM Boot and configuration. Wait for 180 seconds..."
-    #Start-Sleep -Seconds 180
-
-    # Shutdown VM
-    #Write-Output "Shutdown VM"
-    #Shutdown-VMGuest $VM -Confirm:$false | Out-Null
-
-    # Wait 15 seconds for power down to occur
-    #Write-Output "VM Power Down. Wait for 15 seconds..."
-    #Start-Sleep -Seconds 15
-
     $vm_state = (Get-VM -Name $VMName).PowerState
     $time = 0
 
     while ($vm_state -ne "PoweredOff") {
-        Write-Output "Waiting $time seconds for VM to Power Down"
         Start-Sleep -Seconds 1
         $time = $time + 1
+        if ($time % 10 -eq 0) {
+            Write-Output "Waiting $time seconds for VM to Power Down"
+        }
         $vm_state = (Get-VM -Name $VMName).PowerState
         if ($time -eq 300) {
             Write-Output "ERROR: VM Failed to Power Down"
@@ -195,6 +185,8 @@ if ($VM) {
         }
             
     }
+
+    Write-Output "Waited $time second(s) for VM to Power Down."
 
     # Remove seed ISO from VM CD/DVD drive
     Write-Output "Remove seed ISO from VM CD/DVD drive"
