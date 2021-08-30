@@ -51,7 +51,7 @@ param(
     [String] $Folder="Templates",
     [String] $SourceContentLibrary="methods-images",
     [String] $SourceOva = "methods-amazon2",
-    [String] $SeedIso="methods-amzn2-seed",
+    [String] $SeedIso="amazon2-seed",
     [Switch] $UpdateSeedIso,
     [String] $VCServer,
     [String] $ClusterName,
@@ -135,7 +135,7 @@ if ($template) {
 
 # Fetch OVA and Seed ISO rom Content Library
 $ova = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceOva
-$seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SeedIso
+
 
 # Update seed.iso in ContentLibrary when variable set to True
 if ($UpdateSeedIso -And $VCenter -eq "hci") {
@@ -143,6 +143,16 @@ if ($UpdateSeedIso -And $VCenter -eq "hci") {
     $seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
     Set-ContentLibraryItem -ContentLibraryItem $SeedIso -Files $seedfile.Path | Out-Null
 }
+
+$seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SeedIso
+if ($seed_iso) {
+    Write-Output "Found seed ISO"
+} else {
+    Write-Output "ERROR: Unable to find seed ISO. Please investigate content library"
+    exit 1
+}
+
+
 
 # Build OVF Configuration for OVA
 # Write-Output "Build OVF Configuration"
