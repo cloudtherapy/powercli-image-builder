@@ -46,12 +46,12 @@
 
 param(
     [String] $VCenter="hci",
-    [String] $VMName="cetech-amzn2",
+    [String] $VMName="methods-amzn2",
     [String] $DiskFormat="Thin",
     [String] $Folder="Templates",
-    [String] $SourceContentLibrary="cetech-images",
-    [String] $SourceOva = "cetech-amzn2",
-    [String] $SeedIso="cetech-amzn2-seed",
+    [String] $SourceContentLibrary="methods-images",
+    [String] $SourceOva = "methods-amzn2",
+    [String] $SeedIso="methods-amzn2-seed",
     [Switch] $UpdateSeedIso,
     [String] $VCServer,
     [String] $ClusterName,
