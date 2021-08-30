@@ -186,7 +186,7 @@ if ($VM) {
         }
         $vm_state = (Get-VM -Name $VMName).PowerState
         if ($time -eq 300) {
-            Write-Output "ERROR: VM Failed to Power Down"
+            Write-Output "ERROR: VM Failed to Power Down (Stoped and Removed)"
             Stop-VM $VM -Confirm:$false | Out-Null
             Remove-VM -VM $VM -Confirm:$False | Out-Null
             exit 1
