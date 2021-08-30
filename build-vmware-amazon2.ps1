@@ -50,7 +50,7 @@ param(
     [String] $DiskFormat="Thin",
     [String] $Folder="Templates",
     [String] $SourceContentLibrary="methods-images",
-    [String] $SourceOva = "methods-amzn2",
+    [String] $SourceOva = "methods-amazon2",
     [String] $SeedIso="methods-amzn2-seed",
     [Switch] $UpdateSeedIso,
     [String] $VCServer,
