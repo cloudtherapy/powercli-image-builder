@@ -51,7 +51,7 @@ param(
     [String] $Folder="Templates",
     [String] $SourceContentLibrary="methods-images",
     [String] $TargetContentLibrary="methods-images",
-    [String] $SourceOva = "methods-amazon2",
+    [String] $SourceOva = "amazon2",
     [String] $TargetOva = "methods-amazon2",
     [String] $SourceIso="amazon2-seed",
     [Switch] $UpdateSeedIso,
