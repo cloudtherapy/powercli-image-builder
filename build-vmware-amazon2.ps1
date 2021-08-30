@@ -51,7 +51,7 @@ param(
     [String] $Folder="Templates",
     [String] $SourceContentLibrary="methods-images",
     [String] $SourceOva = "methods-amazon2",
-    [String] $SeedIso="amazon2-seed",
+    [String] $SourceIso="amazon2-seed",
     [Switch] $UpdateSeedIso,
     [String] $VCServer,
     [String] $ClusterName,
@@ -138,21 +138,17 @@ $ova = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $Sourc
 
 
 # Update seed.iso in ContentLibrary when variable set to True
-if ($UpdateSeedIso -And $VCenter -eq "hci") {
-    Write-Output "Updating existing seed.iso file in the Content Library"
-    $seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
-    Set-ContentLibraryItem -ContentLibraryItem $SeedIso -Files $seedfile.Path | Out-Null
-}
-
-$seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SeedIso
+$seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceIso -ErrorAction SilentlyContinue
+$seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
 if ($seed_iso) {
-    Write-Output "Found seed ISO"
+    if ($UpdateSeedIso -And $VCenter -eq "hci") {
+        Write-Output "Updating existing seed.iso file in the Content Library"
+        $seed_iso = Set-ContentLibraryItem -ContentLibraryItem $SourceIso -Files $seedfile.Path 
+    }
 } else {
-    Write-Output "ERROR: Unable to find seed ISO. Please investigate content library"
-    exit 1
+    Write-Output "Content Library item not found. Creating the seed ISO"
+    $seed_iso = New-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Files $seedfile.Path -Name $SourceIso 
 }
-
-
 
 # Build OVF Configuration for OVA
 # Write-Output "Build OVF Configuration"
