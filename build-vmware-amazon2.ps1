@@ -135,7 +135,7 @@ if ($template) {
     Remove-Template -Template $VMName -DeletePermanently -Confirm:$false | Out-Null
 }
 
-# Fetch OVA and Seed ISO rom Content Library
+# Fetch OVA and Seed ISO from Content Library
 $ova = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceOva
 
 # Update seed.iso in ContentLibrary when variable set to True
@@ -204,14 +204,18 @@ if ($VM) {
     Write-Output "Convert VM to Template and store in Content Library"
     $target = Get-ContentLibraryItem -ContentLibrary $TargetContentLibrary -Name $TargetOva
     if ($target) {
-        Write-Output "Updating existing VM Temaplte in Content Library"
-        Set-ContentLibraryItem -ContentLibraryItem $target -VM $VMName 
+        Write-Output "Updating existing VM Template in Content Library"
+        Set-ContentLibraryItem -ContentLibraryItem $target -VM $VMName | Out-Null
     } else {
         Write-Output "VM template not found. Creating Content Library item"
-        New-ContentLibraryItem -ContentLibrary $TargetContentLibrary -VM $VMName -Name $TargetOva
+        New-ContentLibraryItem -ContentLibrary $TargetContentLibrary -VM $VMName -Name $TargetOva | Out-Null
     }
     Write-Output "Deleting VM"
     Remove-VM -VM $VM -Confirm:$False | Out-Null
+
+    # Troubleshooting section - creates a VM Template
+    # Write-Output "Convert VM to Template"
+    # Get-VM -Name $VMName | Set-VM -ToTemplate -Confirm:$false | Out-Null
 } else {
     Write-Output "ERROR: VM Failed to launch"
 }

@@ -22,7 +22,8 @@ runcmd:
   - yum install -y firewalld
   - yum install -y ansible
   - yum upgrade -y
-  - poweroff
+  # Found an issue with leveraging poweroff, switched to shutdown
+  - shutdown -h now
 
 # NOTE: Cloud-init applies network settings on every boot by default. To retain network settings from first
 boot, add following ‘write_files’ section:
