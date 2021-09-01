@@ -54,6 +54,7 @@ param(
     [String] $SourceOva = "amazon2",
     [String] $TargetOva = "methods-amazon2",
     [String] $SourceIso="amazon2-seed",
+    [String] $ReleaseType="daily",
     [Switch] $UpdateSeedIso,
     [String] $VCServer,
     [String] $ClusterName,
@@ -200,16 +201,23 @@ if ($VM) {
     Write-Output "Remove seed ISO from VM CD/DVD drive"
     Remove-CDDrive -CD (Get-CDDrive -VM $VM) -Confirm:$false | Out-Null
 
+    # Update Note on Template
+    # Release type [ daily ] Build date [ 2021-06-11 17:53:35 UTC ]
+    $releasedate = Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC"
+    $NewNote = "Release type [ $ReleaseType ] Build date [ $releasedate ]"
+
     # Creating Template from VM and storing in Content Library
     Write-Output "Convert VM to Template and store in Content Library"
     $target = Get-ContentLibraryItem -ContentLibrary $TargetContentLibrary -Name $TargetOva
     if ($target) {
         Write-Output "Updating existing VM Template in Content Library"
         Set-ContentLibraryItem -ContentLibraryItem $target -VM $VMName | Out-Null
+        Set-ContentLibraryItem -ContentLibraryItem $target -Notes $NewNote | Out-Null
     } else {
         Write-Output "VM template not found. Creating Content Library item"
-        New-ContentLibraryItem -ContentLibrary $TargetContentLibrary -VM $VMName -Name $TargetOva | Out-Null
+        New-ContentLibraryItem -ContentLibrary $TargetContentLibrary -VM $VMName -Name $TargetOva -Notes $NewNote | Out-Null
     }
+
     Write-Output "Deleting VM"
     Remove-VM -VM $VM -Confirm:$False | Out-Null
 
