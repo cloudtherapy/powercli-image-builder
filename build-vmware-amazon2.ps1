@@ -54,7 +54,7 @@ param(
     [String] $SourceOva = "amazon2",
     [String] $TargetOva = "methods-amazon2",
     [String] $SourceIso="amazon2-seed",
-    [String] $ReleaseType="daily",
+    [Switch] $Release,
     [Switch] $UpdateSeedIso,
     [String] $VCServer,
     [String] $ClusterName,
@@ -204,11 +204,16 @@ if ($VM) {
     # Update Note on Template
     # Release type [ daily ] Build date [ 2021-06-11 17:53:35 UTC ]
     $releasedate = Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC"
-    $NewNote = "Release type [ $ReleaseType ] Build date [ $releasedate ]"
+    if ($Release) {
+        $NewNote = "Release type [ release ] Build date [ $releasedate ]"
+    } else {
+        $NewNote = "Release type [ daily ] Build date [ $releasedate ]"
+        $TargetOva = "daily-" + $TargetOva
+    }
 
     # Creating Template from VM and storing in Content Library
     Write-Output "Convert VM to Template and store in Content Library"
-    $target = Get-ContentLibraryItem -ContentLibrary $TargetContentLibrary -Name $TargetOva
+    $target = Get-ContentLibraryItem -ContentLibrary $TargetContentLibrary -Name $TargetOva -ErrorAction SilentlyContinue
     if ($target) {
         Write-Output "Updating existing VM Template in Content Library"
         Set-ContentLibraryItem -ContentLibraryItem $target -VM $VMName | Out-Null
