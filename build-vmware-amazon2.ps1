@@ -123,7 +123,7 @@ $Cluster = Get-Cluster -Name $ClusterName
 ## ESX Server
 $VMHost = Get-Cluster $Cluster | Get-VMHost | Sort-Object MemoryGB | Select-Object -first 1
 ## Datastore
-if ($ClusterName -eq "Lenovo-NTNX") {
+if ($ClusterName -eq "Lenovo-NTNX" -or $VCenter -eq "custom") {
     $Datastore = Get-Datastore -Name $DatastoreName
 } else {
     $Datastore = Get-DatastoreCluster -Name $DatastoreName
@@ -142,7 +142,7 @@ $ova = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $Sourc
 # Update seed.iso in ContentLibrary when variable set to True
 $seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceIso -ErrorAction SilentlyContinue
 if ($seed_iso) {
-    if ($UpdateSeedIso -And $VCenter -eq "hci") {
+    if ($UpdateSeedIso -And $VCenter -eq "hci" -or $VCenter -eq "custom") {
         Write-Output "Updating existing seed.iso file in the Content Library"
         $seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
         $seed_iso = Set-ContentLibraryItem -ContentLibraryItem $SourceIso -Files $seedfile.Path 
@@ -187,7 +187,7 @@ if ($VM) {
         }
         $vm_state = (Get-VM -Name $VMName).PowerState
         if ($time -eq 300) {
-            Write-Output "ERROR: VM Failed to Power Down (Stoped and Removed)"
+            Write-Output "ERROR: VM Failed to Power Down (Stopped and Removed)"
             Stop-VM $VM -Confirm:$false | Out-Null
             Remove-VM -VM $VM -Confirm:$False | Out-Null
             exit 1
