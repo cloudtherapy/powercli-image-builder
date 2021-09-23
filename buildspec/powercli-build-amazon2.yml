@@ -1,0 +1,18 @@
+---
+version: 0.2
+
+env:
+  variables:
+     VCENTER_PLATFORM: hci
+  parameter-store:
+     VCENTER_PASSWORD: /CodeBuild/VCENTER_PASSWORD
+phases:
+  pre_build:
+    commands:
+      - genisoimage -output seedconfig/seed.iso -volid cidata -joliet -rock seedconfig/user-data seedconfig/meta-data
+      - ls -al seedconfig
+  build:
+    commands:
+      - pwd
+      - pwd
+      - pwsh -f build-vmware-amazon2.ps1 -VCenter $VCENTER_PLATFORM -UpdateSeedIso -Release
