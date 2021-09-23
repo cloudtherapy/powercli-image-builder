@@ -54,6 +54,7 @@ param(
     [String] $SourceOva = "amazon2",
     [String] $TargetOva = "methods-amazon2",
     [String] $SourceIso="amazon2-seed",
+    [Switch] $Release,
     [Switch] $UpdateSeedIso,
     [String] $VCServer,
     [String] $ClusterName,
@@ -122,7 +123,7 @@ $Cluster = Get-Cluster -Name $ClusterName
 ## ESX Server
 $VMHost = Get-Cluster $Cluster | Get-VMHost | Sort-Object MemoryGB | Select-Object -first 1
 ## Datastore
-if ($ClusterName -eq "Lenovo-NTNX") {
+if ($ClusterName -eq "Lenovo-NTNX" -or $VCenter -eq "custom") {
     $Datastore = Get-Datastore -Name $DatastoreName
 } else {
     $Datastore = Get-DatastoreCluster -Name $DatastoreName
@@ -135,13 +136,13 @@ if ($template) {
     Remove-Template -Template $VMName -DeletePermanently -Confirm:$false | Out-Null
 }
 
-# Fetch OVA and Seed ISO rom Content Library
+# Fetch OVA and Seed ISO from Content Library
 $ova = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceOva
 
 # Update seed.iso in ContentLibrary when variable set to True
 $seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceIso -ErrorAction SilentlyContinue
 if ($seed_iso) {
-    if ($UpdateSeedIso -And $VCenter -eq "hci") {
+    if ($UpdateSeedIso -And $VCenter -eq "hci" -or $VCenter -eq "custom") {
         Write-Output "Updating existing seed.iso file in the Content Library"
         $seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
         $seed_iso = Set-ContentLibraryItem -ContentLibraryItem $SourceIso -Files $seedfile.Path 
@@ -186,7 +187,7 @@ if ($VM) {
         }
         $vm_state = (Get-VM -Name $VMName).PowerState
         if ($time -eq 300) {
-            Write-Output "ERROR: VM Failed to Power Down (Stoped and Removed)"
+            Write-Output "ERROR: VM Failed to Power Down (Stopped and Removed)"
             Stop-VM $VM -Confirm:$false | Out-Null
             Remove-VM -VM $VM -Confirm:$False | Out-Null
             exit 1
@@ -200,18 +201,34 @@ if ($VM) {
     Write-Output "Remove seed ISO from VM CD/DVD drive"
     Remove-CDDrive -CD (Get-CDDrive -VM $VM) -Confirm:$false | Out-Null
 
+    # Update Note on Template
+    # Release type [ daily ] Build date [ 2021-06-11 17:53:35 UTC ]
+    $releasedate = Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC"
+    if ($Release) {
+        $NewNote = "Release type [ release ] Build date [ $releasedate ]"
+    } else {
+        $NewNote = "Release type [ daily ] Build date [ $releasedate ]"
+        $TargetOva = "daily-" + $TargetOva
+    }
+
     # Creating Template from VM and storing in Content Library
     Write-Output "Convert VM to Template and store in Content Library"
-    $target = Get-ContentLibraryItem -ContentLibrary $TargetContentLibrary -Name $TargetOva
+    $target = Get-ContentLibraryItem -ContentLibrary $TargetContentLibrary -Name $TargetOva -ErrorAction SilentlyContinue
     if ($target) {
-        Write-Output "Updating existing VM Temaplte in Content Library"
-        Set-ContentLibraryItem -ContentLibraryItem $target -VM $VMName 
+        Write-Output "Updating existing VM Template in Content Library"
+        Set-ContentLibraryItem -ContentLibraryItem $target -VM $VMName | Out-Null
+        Set-ContentLibraryItem -ContentLibraryItem $target -Notes $NewNote | Out-Null
     } else {
         Write-Output "VM template not found. Creating Content Library item"
-        New-ContentLibraryItem -ContentLibrary $TargetContentLibrary -VM $VMName -Name $TargetOva
+        New-ContentLibraryItem -ContentLibrary $TargetContentLibrary -VM $VMName -Name $TargetOva -Notes $NewNote | Out-Null
     }
+
     Write-Output "Deleting VM"
     Remove-VM -VM $VM -Confirm:$False | Out-Null
+
+    # Troubleshooting section - creates a VM Template
+    # Write-Output "Convert VM to Template"
+    # Get-VM -Name $VMName | Set-VM -ToTemplate -Confirm:$false | Out-Null
 } else {
     Write-Output "ERROR: VM Failed to launch"
 }
