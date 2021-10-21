@@ -105,7 +105,7 @@ if ($env:VCENTER_PASSWORD) {
     Write-Output "Connect to VCenter ${VCServer}"
     Connect-VIServer $VCServer -User administrator@vsphere.local -Password $env:VCENTER_PASSWORD | Out-Null
 } else {
-    Write-Output "ERROR: Please set environment variable vcenter_pass"
+    Write-Output "ERROR: Please set environment variable VCENTER_PASSWORD"
     exit 1
 }
 
