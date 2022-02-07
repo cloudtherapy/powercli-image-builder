@@ -73,24 +73,12 @@ if ($Environment -eq "custom") {
     Write-Output("Custom VCenter: ${VCServer}")
 } elseif ($Environment -eq "hci") {
     Write-Output("HCI VCenter (TierPoint)")
-    $VCServer="hci-vcenter.cetech-ne.local"
+    $VCServer="hci-vcenter.cetechllc.local"
     $ClusterName="NTAP"
     $DatastoreName="NetApp-HCI-Datastore"
-    $NetworkName="VM_Network"
-} elseif ($Environment -eq "norwood") {
-    Write-Output("Norwood VCenter (Norwood, MA)")
-    $VCServer="norw-vcenter.cetech-ne.local"
-    $ClusterName="HP 320"
-    $DatastoreName="pure_ds"
-    $NetworkName="VM Network"
-} elseif ($Environment -eq "ntnx") {
-    Write-Output("Nutanix VCenter (Flemington, NJ)")
-    $VCServer="ntnx-vcenter.cetech-ne.local"
-    $ClusterName="Lenovo-NTNX"
-    $DatastoreName="default-container-esx"
     $NetworkName="VM Network"
 } else {
-    Write-Output "ERROR: Unknown VCenter. Valid environments: hci,norwood,ntnx"
+    Write-Output "ERROR: Unknown VCenter. Valid environments: hci,custom"
     exit 1
 }
 
@@ -103,7 +91,7 @@ Import-Module VMware.VimAutomation.Core -WarningAction SilentlyContinue
 # Connect to VCenter 
 if ($env:VCENTER_PASSWORD) {
     Write-Output "Connect to VCenter ${VCServer}"
-    Connect-VIServer $VCServer -User administrator@vsphere.local -Password $env:VCENTER_PASSWORD | Out-Null
+    Connect-VIServer $VCServer -User svc_vcenter@cetechllc.local -Password $env:VCENTER_PASSWORD | Out-Null
 } else {
     Write-Output "ERROR: Please set environment variable VCENTER_PASSWORD"
     exit 1
