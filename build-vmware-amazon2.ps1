@@ -177,7 +177,7 @@ if ($VM) {
         if ($time -eq 300) {
             Write-Output "ERROR: VM Failed to Power Down (Stopped and Removed)"
             Stop-VM $VM -Confirm:$false | Out-Null
-            Remove-VM -VM $VM -Confirm:$False | Out-Null
+            Remove-VM -VM $VM -DeletePermanently -Confirm:$False | Out-Null
             exit 1
         }
             
