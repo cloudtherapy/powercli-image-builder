@@ -212,7 +212,7 @@ if ($VM) {
     }
 
     Write-Output "Deleting VM"
-    Remove-VM -VM $VM -Confirm:$False | Out-Null
+    Remove-VM -VM $VM -DeletePermanently -Confirm:$False | Out-Null
 
     # Troubleshooting section - creates a VM Template
     # Write-Output "Convert VM to Template"
