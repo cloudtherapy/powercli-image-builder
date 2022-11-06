@@ -1,5 +1,4 @@
 ﻿# Carlos Moreira
-# www.cloudmethodsllc.com
 # Deployment of Amazon Linux 2 in vCenter/vSphere
 
 <#
