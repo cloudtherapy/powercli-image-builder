@@ -39,19 +39,19 @@
     PS> build-vmware-amazon2.ps1 -VCServer vcenter.local -ClusterName ESX_Cluster -DatastoreName Storage1 -Network Name VM_Network
 
     .LINK
-    https://github.com/cloudmethods/powercli-image-builder/
+    https://github.com/cetechllc/powercli-image-builder/
 
 #>
 
 param(
     [String] $VCenter="hci",
-    [String] $VMName="methods-amzn2",
+    [String] $VMName="cetech-amzn2",
     [String] $DiskFormat="Thin",
     [String] $Folder="Templates",
-    [String] $SourceContentLibrary="methods-images",
-    [String] $TargetContentLibrary="methods-images",
+    [String] $SourceContentLibrary="cetech-images",
+    [String] $TargetContentLibrary="cetech-images",
     [String] $SourceOva = "amazon2",
-    [String] $TargetOva = "methods-amazon2",
+    [String] $TargetOva = "cetech-amazon2",
     [String] $SourceIso="amazon2-seed",
     [Switch] $Release,
     [Switch] $UpdateSeedIso,
