@@ -149,7 +149,7 @@ $ovfConfig.NetworkMapping.bridged.Value = $NetworkName
 
 # Launch VM from OVA
 Write-Output "Launch new VM"
-New-VM -ContentLibraryItem $ova -OvfConfiguration $ovfConfig -Hardwareversion 13 -Name $VMName -ResourcePool $VMHost -Location $Folder -Datastore $Datastore -Confirm:$false | Out-Null
+New-VM -ContentLibraryItem $ova -OvfConfiguration $ovfConfig -HardwareVersion "13" -Name $VMName -ResourcePool $VMHost -Location $Folder -Datastore $Datastore -Confirm:$false | Out-Null
 $VM = Get-VM $VMName
 
 # Continue if VM launched successfully
