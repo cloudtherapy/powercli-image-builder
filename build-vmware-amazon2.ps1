@@ -50,9 +50,10 @@ param(
     [String] $Folder="Templates",
     [String] $SourceContentLibrary="cetech-images",
     [String] $TargetContentLibrary="cetech-images",
-    [String] $SourceOva = "amazon2",
-    [String] $TargetOva = "cetech-amazon2",
+    [String] $SourceOva="amazon2",
+    [String] $TargetOva="cetech-amazon2",
     [String] $SourceIso="amazon2-seed",
+    [String] $VMVersion="vmx-13",
     [Switch] $Release,
     [Switch] $UpdateSeedIso,
     [String] $VCServer,
@@ -151,6 +152,7 @@ $ovfConfig.NetworkMapping.bridged.Value = $NetworkName
 Write-Output "Launch new VM"
 New-VM -ContentLibraryItem $ova -OvfConfiguration $ovfConfig -Name $VMName -ResourcePool $VMHost -Location $Folder -Datastore $Datastore -Confirm:$false | Out-Null
 $VM = Get-VM $VMName
+Set-VM -VM $VM -HardwareVersion $VMVersion -Confirm:$false | Out-Null
 
 # Continue if VM launched successfully
 if ($VM) {
