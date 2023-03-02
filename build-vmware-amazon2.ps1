@@ -53,7 +53,7 @@ param(
     [String] $SourceOva="amazon2",
     [String] $TargetOva="cetech-amazon2",
     [String] $SourceIso="amazon2-seed",
-    [String] $VMVersion="vmx-13",
+    [String] $VMVersion="vmx-15",
     [Switch] $Release,
     [Switch] $UpdateSeedIso,
     [String] $VCServer,
