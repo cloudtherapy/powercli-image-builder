@@ -10,7 +10,7 @@
     user-data at launch. After customization, shutdown the VM and convert to template.
 
     .PARAMETER Environment
-    Specify target VCenter environment: hci, norwood, ntnx
+    Specify target VCenter environment: hci, norwood, tp
 
     .INPUTS
     None.
@@ -21,22 +21,22 @@
     .EXAMPLE
     Build image in TierPoint cluster:
 
-    PS> build-vmware-amazon2.ps1 -VCenter hci
+    PS> build-vmware-al2023.ps1 -VCenter hci
 
     .EXAMPLE
     Build image in Norwood cluster:
 
-    PS> build-vmware-amazon2.ps1 -VCenter norwood
+    PS> build-vmware-al2023.ps1 -VCenter norwood
 
     .EXAMPLE
     Build image in Nutanix cluster:
 
-    PS> build-vmware-amazon2.ps1 -VCenter ntnx
+    PS> build-vmware-al2023.ps1 -VCenter ntnx
 
     .EXAMPLE
     Build image in custom VCenter cluster:
 
-    PS> build-vmware-amazon2.ps1 -VCServer vcenter.local -ClusterName ESX_Cluster -DatastoreName Storage1 -Network Name VM_Network
+    PS> build-vmware-al2023.ps1 -VCServer vcenter.local -ClusterName ESX_Cluster -DatastoreName Storage1 -Network Name VM_Network
 
     .LINK
     https://github.com/cetechllc/powercli-image-builder/
@@ -52,7 +52,7 @@ param(
     [String] $TargetContentLibrary="cetech-images",
     [String] $SourceOva="al2023",
     [String] $TargetOva="cetech-al2023",
-    [String] $SourceIso="amazon2-seed",
+    [String] $SourceIso="al2023-seed",
     [String] $VMVersion="vmx-15",
     [Switch] $Release,
     [Switch] $UpdateSeedIso,
