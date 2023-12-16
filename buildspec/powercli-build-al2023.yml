@@ -1,0 +1,26 @@
+---
+version: 0.2
+
+env:
+  variables:
+    VCENTER_PLATFORM: hci
+  parameter-store:
+    VCENTER_PASSWORD: /CodeBuild/VCENTER_PASSWORD
+phases:
+  pre_build:
+    commands:
+      - genisoimage
+        -output seedconfig-al2023/seed.iso
+        -volid cidata
+        -joliet
+        -rock seedconfig-al2023/user-data seedconfig-al2023/meta-data
+      - ls -al seedconfig-al2023
+  build:
+    commands:
+      - pwd
+      - ls -lR
+      - pwsh
+        -File build-vmware-al2023.ps1
+            -VCenter $VCENTER_PLATFORM
+            -UpdateSeedIso
+            -Release
