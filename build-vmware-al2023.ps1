@@ -10,7 +10,7 @@
     user-data at launch. After customization, shutdown the VM and convert to template.
 
     .PARAMETER Environment
-    Specify target VCenter environment: hci, norwood, tp
+    Specify target VCenter environment: hci, norw, tp
 
     .INPUTS
     None.
@@ -26,12 +26,7 @@
     .EXAMPLE
     Build image in Norwood cluster:
 
-    PS> build-vmware-al2023.ps1 -VCenter norwood
-
-    .EXAMPLE
-    Build image in Nutanix cluster:
-
-    PS> build-vmware-al2023.ps1 -VCenter ntnx
+    PS> build-vmware-al2023.ps1 -VCenter norw
 
     .EXAMPLE
     Build image in custom VCenter cluster:
@@ -39,7 +34,7 @@
     PS> build-vmware-al2023.ps1 -VCServer vcenter.local -ClusterName ESX_Cluster -DatastoreName Storage1 -Network Name VM_Network
 
     .LINK
-    https://github.com/cetechllc/powercli-image-builder/
+    https://github.com/cloudtherapy/powercli-image-builder/
 
 #>
 
@@ -132,12 +127,12 @@ $seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $
 if ($seed_iso) {
     if ($UpdateSeedIso -And $VCenter -eq "hci" -or $VCenter -eq "custom") {
         Write-Output "Updating existing seed.iso file in the Content Library"
-        $seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
+        $seedfile = Resolve-Path -Path(Get-Item seedconfig-al2023\seed.iso)
         $seed_iso = Set-ContentLibraryItem -ContentLibraryItem $SourceIso -Files $seedfile.Path 
     }
 } else {
-    Write-Output "Content Library item not found. Creating the seed ISO"
-    $seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
+    Write-Output "Using existing seed ISO"
+    $seedfile = Resolve-Path -Path(Get-Item seedconfig-al2023\seed.iso)
     $seed_iso = New-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Files $seedfile.Path -Name $SourceIso 
 }
 

@@ -9,30 +9,9 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     groups: sudo
     shell: /bin/bash
-  - name: ec2-user
-    ssh-authorized-keys:
-      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCTD8HrwW7d5xvgs0o0dXkyNFdgZwab4G9Ok2Irh7uuk0OOW/U9QyePpfHzDboSsyfSGjwG3qzn6zKncq1vg2YmaR2oOm555T5D3/faGdJ1UJbx5hqiogkfw4hXMreg/u9Ah9CuucDUKwRxQC/MhpVrGb1MAEuDd5ZKPT6QF99ssgno/ibrHdraENMsZu+FxmJZ/Ukmi6ik8eJYRlSvAEZXw2hQIEcEaYejWMnNmE06ys5xjQe30pmV2a/Wxg4NN2MrDFzCssSDARAMak5v0vGkLGTsJYx56NaKLqnOudkKnPkXK/AvvEB26L1F1kaZLyR0jrzjTuKKEuqUJReKf/MV
-#chpasswd:
-#  list: |
-#    ec2-user:amazon
+
+chpasswd:
+  list: |
+    ec2-user:amazon
 
 # In the above line, do not add any spaces after 'ec2-user:'.
-
-runcmd:
-  - dnf install -y firewalld
-  - dnf install -y ansible
-  - dnf upgrade -y
-  - poweroff
-
-# NOTE: Cloud-init applies network settings on every boot by default. To retain network settings from first
-boot, add following ‘write_files’ section:
-write_files:
-  - path: /etc/cloud/cloud.cfg.d/80_disable_network_after_firstboot.cfg
-    content: |
-      # Disable network configuration after first boot
-      network:
-        config: disabled
-  - path: /etc/cloud/cloud.cfg.d/90_enable_pw_auth.cfg
-    content: |
-      # Enable password authentication after first boot
-      ssh_pwauth: True

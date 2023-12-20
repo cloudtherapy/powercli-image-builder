@@ -1,5 +1,5 @@
 ---
-version: 0.2
+version: 0.3
 
 env:
   variables:
@@ -10,17 +10,17 @@ phases:
   pre_build:
     commands:
       - genisoimage
-        -output seedconfig/seed.iso
+        -output seedconfig-amzn2/seed.iso
         -volid cidata
         -joliet
-        -rock seedconfig/user-data seedconfig/meta-data
-      - ls -al seedconfig
+        -rock seedconfig/user-data seedconfig-amzn2/meta-data
+      - ls -al seedconfig-amzn2
   build:
     commands:
       - pwd
       - ls -lR
       - pwsh
-        -File build-vmware-amazon2.ps1
+        -File build-vmware-amzn2.ps1
             -VCenter $VCENTER_PLATFORM
             -UpdateSeedIso
             -Release

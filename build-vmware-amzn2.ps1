@@ -10,7 +10,7 @@
     user-data at launch. After customization, shutdown the VM and convert to template.
 
     .PARAMETER Environment
-    Specify target VCenter environment: hci, norwood, ntnx
+    Specify target VCenter environment: hci, norw, tp
 
     .INPUTS
     None.
@@ -26,12 +26,7 @@
     .EXAMPLE
     Build image in Norwood cluster:
 
-    PS> build-vmware-amazon2.ps1 -VCenter norwood
-
-    .EXAMPLE
-    Build image in Nutanix cluster:
-
-    PS> build-vmware-amazon2.ps1 -VCenter ntnx
+    PS> build-vmware-amazon2.ps1 -VCenter norw
 
     .EXAMPLE
     Build image in custom VCenter cluster:
@@ -39,7 +34,7 @@
     PS> build-vmware-amazon2.ps1 -VCServer vcenter.local -ClusterName ESX_Cluster -DatastoreName Storage1 -Network Name VM_Network
 
     .LINK
-    https://github.com/cetechllc/powercli-image-builder/
+    https://github.com/cloudtherapy/powercli-image-builder/
 
 #>
 
@@ -50,9 +45,9 @@ param(
     [String] $Folder="Templates",
     [String] $SourceContentLibrary="cetech-images",
     [String] $TargetContentLibrary="cetech-images",
-    [String] $SourceOva="amazon2",
-    [String] $TargetOva="cetech-amazon2",
-    [String] $SourceIso="amazon2-seed",
+    [String] $SourceOva="amzn2",
+    [String] $TargetOva="cetech-amzn2",
+    [String] $SourceIso="amzn2-seed",
     [String] $VMVersion="vmx-15",
     [Switch] $Release,
     [Switch] $UpdateSeedIso,
@@ -111,7 +106,7 @@ $Cluster = Get-Cluster -Name $ClusterName
 ## ESX Server
 $VMHost = Get-Cluster $Cluster | Get-VMHost | Sort-Object MemoryGB | Select-Object -first 1
 ## Datastore
-if ($ClusterName -eq "Lenovo-NTNX" -or $VCenter -eq "custom") {
+if ($ClusterName -eq "HP" -or $VCenter -eq "custom") {
     $Datastore = Get-Datastore -Name $DatastoreName
 } else {
     $Datastore = Get-DatastoreCluster -Name $DatastoreName
@@ -132,12 +127,12 @@ $seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $
 if ($seed_iso) {
     if ($UpdateSeedIso -And $VCenter -eq "hci" -or $VCenter -eq "custom") {
         Write-Output "Updating existing seed.iso file in the Content Library"
-        $seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
+        $seedfile = Resolve-Path -Path(Get-Item seedconfig-amzn2\seed.iso)
         $seed_iso = Set-ContentLibraryItem -ContentLibraryItem $SourceIso -Files $seedfile.Path 
     }
 } else {
     Write-Output "Content Library item not found. Creating the seed ISO"
-    $seedfile = Resolve-Path -Path(Get-Item seedconfig\seed.iso)
+    $seedfile = Resolve-Path -Path(Get-Item seedconfig-amzn2\seed.iso)
     $seed_iso = New-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Files $seedfile.Path -Name $SourceIso 
 }
 
