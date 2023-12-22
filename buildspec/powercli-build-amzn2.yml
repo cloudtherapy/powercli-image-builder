@@ -13,7 +13,7 @@ phases:
         -output seedconfig-amzn2/seed.iso
         -volid cidata
         -joliet
-        -rock seedconfig/user-data seedconfig-amzn2/meta-data
+        -rock seedconfig-amzn2/user-data seedconfig-amzn2/meta-data
       - ls -al seedconfig-amzn2
   build:
     commands:
