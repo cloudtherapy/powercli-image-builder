@@ -125,13 +125,13 @@ $ova = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $Sourc
 # Update seed.iso in ContentLibrary when variable set to True
 $seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceIso -ErrorAction SilentlyContinue
 if ($seed_iso) {
-    if ($UpdateSeedIso -And $VCenter -eq "hci" -or $VCenter -eq "custom") {
+    if ($UpdateSeedIso) {
         Write-Output "Updating existing seed.iso file in the Content Library"
         $seedfile = Resolve-Path -Path(Get-Item seedconfig-al2023\seed.iso)
         $seed_iso = Set-ContentLibraryItem -ContentLibraryItem $SourceIso -Files $seedfile.Path 
     }
 } else {
-    Write-Output "Using existing seed ISO"
+    Write-Output "Content Library item not found. Creating the seed ISO"
     $seedfile = Resolve-Path -Path(Get-Item seedconfig-al2023\seed.iso)
     $seed_iso = New-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Files $seedfile.Path -Name $SourceIso 
 }
