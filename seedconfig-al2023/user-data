@@ -13,13 +13,15 @@ users:
     groups: sudo
     shell: /bin/bash
 
-#chpasswd:
-#  list: |
-#    ec2-user:amazon
+chpasswd:
+  list: |
+    ec2-user:amazon
 
 # In the above line, do not add any spaces after 'ec2-user:'.
 
 runcmd:
   - dnf install -y ansible
   - dnf upgrade -y
+  - sudo cloud-init clean --logs --seed
+  - sudo rm -rf /var/lib/cloud/*
   - poweroff
