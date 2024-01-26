@@ -69,7 +69,7 @@ if ($Environment -eq "custom") {
 } elseif ($Environment -eq "hci") {
     Write-Output("HCI VCenter (TierPoint)")
     $VCServer="hci-vcenter.cetechllc.local"
-    $ClusterName="NTAP"
+    $ClusterName="HP"
     $DatastoreName="NetApp-HCI-Datastore"
     $NetworkName="VM Network"
 } else {
@@ -106,7 +106,7 @@ $Cluster = Get-Cluster -Name $ClusterName
 ## ESX Server
 $VMHost = Get-Cluster $Cluster | Get-VMHost | Sort-Object MemoryGB | Select-Object -first 1
 ## Datastore
-if ($ClusterName -eq "Lenovo-NTNX" -or $VCenter -eq "custom") {
+if ($VCenter -eq "custom") {
     $Datastore = Get-Datastore -Name $DatastoreName
 } else {
     $Datastore = Get-DatastoreCluster -Name $DatastoreName
@@ -148,6 +148,7 @@ Write-Output "Launch new VM"
 New-VM -ContentLibraryItem $ova -OvfConfiguration $ovfConfig -Name $VMName -ResourcePool $VMHost -Location $Folder -Datastore $Datastore -Confirm:$false | Out-Null
 $VM = Get-VM $VMName
 Set-VM -VM $VM -HardwareVersion $VMVersion -Confirm:$false | Out-Null
+Set-VM -VM $VM -GuestId "other3xLinux64Guest" -Confirm:$false | Out-Null
 
 # Continue if VM launched successfully
 if ($VM) {
