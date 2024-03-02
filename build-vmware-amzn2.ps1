@@ -125,7 +125,7 @@ $ova = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $Sourc
 # Update seed.iso in ContentLibrary when variable set to True
 $seed_iso = Get-ContentLibraryItem -ContentLibrary $SourceContentLibrary -Name $SourceIso -ErrorAction SilentlyContinue
 if ($seed_iso) {
-    if ($UpdateSeedIso -And $VCenter -eq "hci" -or $VCenter -eq "custom") {
+    if ($UpdateSeedIso) {
         Write-Output "Updating existing seed.iso file in the Content Library"
         $seedfile = Resolve-Path -Path(Get-Item seedconfig-amzn2\seed.iso)
         $seed_iso = Set-ContentLibraryItem -ContentLibraryItem $SourceIso -Files $seedfile.Path 
