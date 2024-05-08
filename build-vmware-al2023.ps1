@@ -69,7 +69,7 @@ if ($Environment -eq "custom") {
 } elseif ($Environment -eq "hci") {
     Write-Output("HCI VCenter (TierPoint)")
     $VCServer="hci-vcenter.cetechllc.local"
-    $ClusterName="HP"
+    $ClusterName="NTAP"
     $DatastoreName="NetApp-HCI-Datastore"
     $NetworkName="VM Network"
 } else {
