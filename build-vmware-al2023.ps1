@@ -148,7 +148,7 @@ Write-Output "Launch new VM"
 New-VM -ContentLibraryItem $ova -OvfConfiguration $ovfConfig -Name $VMName -ResourcePool $VMHost -Location $Folder -Datastore $Datastore -Confirm:$false | Out-Null
 $VM = Get-VM $VMName
 Set-VM -VM $VM -HardwareVersion $VMVersion -Confirm:$false | Out-Null
-Set-VM -VM $VM -GuestId "other3xLinux64Guest" -Confirm:$false | Out-Null
+Set-VM -VM $VM -GuestId "amazonlinux2_64Guest" -Confirm:$false | Out-Null
 
 # Continue if VM launched successfully
 if ($VM) {
