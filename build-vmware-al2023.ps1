@@ -48,7 +48,7 @@ param(
     [String] $SourceOva="al2023",
     [String] $TargetOva="cetech-al2023",
     [String] $SourceIso="al2023-seed",
-    [String] $VMVersion="vmx-15",
+    [String] $VMVersion="vmx-18",
     [Switch] $Release,
     [Switch] $UpdateSeedIso,
     [String] $VCServer,
