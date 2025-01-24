@@ -106,7 +106,7 @@ $Cluster = Get-Cluster -Name $ClusterName
 ## ESX Server
 $VMHost = Get-Cluster $Cluster | Get-VMHost | Sort-Object MemoryGB | Select-Object -first 1
 ## Datastore
-$Datastore = Get-DatastoreCluster -Name $DatastoreName
+$Datastore = Get-Datastore -Name $DatastoreName
 
 # Cleanup existing template, if found
 $template = Get-Template $VMName -ErrorAction SilentlyContinue
