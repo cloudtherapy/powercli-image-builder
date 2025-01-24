@@ -40,13 +40,13 @@
 
 param(
     [String] $VCenter="hci",
-    [String] $VMName="cetech-al2023",
+    [String] $VMName="aqtech-al2023",
     [String] $DiskFormat="Thin",
     [String] $Folder="Templates",
-    [String] $SourceContentLibrary="cetech-images",
-    [String] $TargetContentLibrary="cetech-images",
+    [String] $SourceContentLibrary="aqtech-images",
+    [String] $TargetContentLibrary="aqtech-images",
     [String] $SourceOva="al2023",
-    [String] $TargetOva="cetech-al2023",
+    [String] $TargetOva="aqtech-al2023",
     [String] $SourceIso="al2023-seed",
     [String] $VMVersion="vmx-18",
     [Switch] $Release,
@@ -68,9 +68,9 @@ if ($Environment -eq "custom") {
     Write-Output("Custom VCenter: ${VCServer}")
 } elseif ($Environment -eq "hci") {
     Write-Output("HCI VCenter (TierPoint)")
-    $VCServer="hci-vcenter.cetechllc.local"
-    $ClusterName="NTAP"
-    $DatastoreName="NetApp-HCI-Datastore"
+    $VCServer="hci-vcenter.aqtech.dev"
+    $ClusterName="DELL"
+    $DatastoreName="pure_ds02"
     $NetworkName="VM Network"
 } else {
     Write-Output "ERROR: Unknown VCenter. Valid environments: hci,custom"
