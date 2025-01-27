@@ -86,7 +86,12 @@ Import-Module VMware.VimAutomation.Core -WarningAction SilentlyContinue
 # Connect to VCenter 
 if ($env:VCENTER_PASSWORD) {
     Write-Output "Connect to VCenter ${VCServer}"
-    Connect-VIServer $VCServer -User administrator@vsphere.local -Password $env:VCENTER_PASSWORD | Out-Null
+    try {
+        Connect-VIServer $VCServer -User administrator@vsphere.local -Password $env:VCENTER_PASSWORD -ErrorAction Stop | Out-Null
+    } catch {
+        Write-Output "ERROR: Failed to connect to VCenter. $_"
+        exit 1
+    }
 } else {
     Write-Output "ERROR: Please set environment variable VCENTER_PASSWORD"
     exit 1
